@@ -5,6 +5,7 @@ export interface ReservationCreateRequest {
     userId: number;
     checkInAt: Date;
     checkOutAt: Date;
+    qrId: number;
 }
 
 export interface ReservationResponse {
@@ -12,17 +13,17 @@ export interface ReservationResponse {
     parkingLotId: number;
     userId: number;
     checkInAt: Date;
-    checkOutAt: Date;
+    checkOutAt: Date | null;
 }
 
 export function toReservationResponseList(reservation: Reservation[]): ReservationResponse[] {
     const result = reservation.map((data) => {
         return {
             id: data.id,
-            parkingLotId: data.parkingLotId,
+            parkingLotId: data.id,
             userId: data.userId,
-            checkInAt: data.checkInAt,
-            checkOutAt: data.checkOutAt
+            checkInAt: data.inAt,
+            checkOutAt: data.outAt
         }
     })
 
@@ -32,9 +33,9 @@ export function toReservationResponseList(reservation: Reservation[]): Reservati
 export function toReservationResponse(reservation: Reservation): ReservationResponse {
     return {
         id: reservation.id,
-        parkingLotId: reservation.parkingLotId,
+        parkingLotId: reservation.id,
         userId: reservation.userId,
-        checkInAt: reservation.checkInAt,
-        checkOutAt: reservation.checkOutAt
+        checkInAt: reservation.inAt,
+        checkOutAt: reservation.outAt
     }
 }

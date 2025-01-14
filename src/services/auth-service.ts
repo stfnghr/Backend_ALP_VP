@@ -25,14 +25,15 @@ export class UserService {
 
     const user = await prismaClient.user.create({
         data: {
-            firstName: registerReq.firstName,
-            lastName: registerReq.lastName,
-            NIM: registerReq.NIM,
-            licensePlate: registerReq.licensePlate,
-            SIM: registerReq.SIM,
-            email: registerReq.email,
-            password: registerReq.password,
-            token: uuid()
+          firstName: registerReq.firstName,
+          lastName: registerReq.lastName,
+          username: registerReq.firstName + ' ' + registerReq.lastName, // Combine first and last name
+          email: registerReq.email,
+          password: registerReq.password,
+          token: uuid(),
+          NIM: registerReq.NIM,
+          licensePlate: registerReq.licensePlate,
+          SIM: registerReq.SIM
         }
     })
 

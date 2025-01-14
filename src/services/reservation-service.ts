@@ -1,6 +1,6 @@
 import { prismaClient } from "../applications/database";
 import { ResponseError } from "../errors/response-error";
-import { ReservationCreateRequest, ReservationResponse, toReservationResponse } from "../models/reservation-model";
+import { ReservationCreateRequest, ReservationResponse, toReservationResponse, toReservationResponseList } from "../models/reservation-model";
 
 export class ReservationService {
   static async createReservation(data: ReservationCreateRequest): Promise<ReservationResponse> {
@@ -26,10 +26,12 @@ export class ReservationService {
 
     const reservation = await prismaClient.reservation.create({
       data: {
-        parkingLotId: data.parkingLotId,
+        lotId: data.parkingLotId,
         userId: data.userId,
-        checkInAt: data.checkInAt,
-        checkOutAt: data.checkOutAt,
+        inAt: data.checkInAt,
+        outAt: null, // Ensure outAt is null initially
+        status: "active", // Set the reservation status to active
+        qrId: data.qrId
       },
     });
 
@@ -47,13 +49,13 @@ export class ReservationService {
       throw new ResponseError(404, "Booking not found");
     }
 
-    if (reservation.checkOutAt) {
+    if (reservation.outAt) {
       throw new ResponseError(400, "Booking already checked out");
     }
 
     const parkingLot = await prismaClient.parkingLot.findUnique({
       where: {
-        id: reservation.parkingLotId,
+        id: reservation.id,
       },
     });
 
@@ -62,7 +64,7 @@ export class ReservationService {
     }
 
     const checkOutAt = new Date();
-    const checkInAt = reservation.checkInAt;
+    const checkInAt = reservation.inAt;
     const duration = checkOutAt.getTime() - checkInAt.getTime();
 
     await prismaClient.reservation.update({
@@ -70,13 +72,13 @@ export class ReservationService {
         id: id,
       },
       data: {
-        checkOutAt: checkOutAt,
+        outAt: checkOutAt,
       },
     });
 
     return toReservationResponse({
       ...reservation,
-      checkOutAt: checkOutAt,
+      outAt: checkOutAt,
     });
   }
 
@@ -97,6 +99,6 @@ export class ReservationService {
   static async getReservations(): Promise<ReservationResponse[]> {
     const reservations = await prismaClient.reservation.findMany();
 
-    return reservations;
+    return toReservationResponseList(reservations);
   }
 }
